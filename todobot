@@ -1,0 +1,87 @@
+# todobot: планировщик задач
+
+
+import telebot
+
+from random import choice
+
+token = '5333661326:AAHgGhCuQVtaQ4RH61P37YPT12HYhrTWquU'
+
+bot = telebot.TeleBot(token)
+
+
+RANDOM_TASKS = [
+    'Написать Гвидо письмо',
+    'Выучить Python',
+    'Записаться на курс в Нетологию',
+    'Посмотреть 4 сезон Рик и Морти'
+    ]
+
+HELP = """
+/help - напечатать справку по программе.
+/add - добавить задачу в список (название задачи запрашиваем у пользователя).
+/show - напечатать все добавленные задачи.
+/random - добавлять случайную задачу на дату СЕГОДНЯ.
+"""
+
+tasks = {}
+
+def add_todo(date, task):
+    if date not in tasks:
+        # такой даты в словаре нет
+        # создаем запись с ключом date
+        tasks[date] = []
+    # Добавляем в список задачу
+    tasks[date].append(task)
+    # если такая задача уже есть в списке, убираем дубль
+    tasks[date] = list(set(tasks[date]))
+    return f'Задача {task} добавлена на дату {date}'
+
+@bot.message_handler(commands=['help'])
+def help(message):
+    bot.send_message(message.chat.id, HELP)
+
+@bot.message_handler(commands=['add', 'todo', 'random'])
+def todo(message):
+    command = message.text.split(maxsplit=2)
+    if command[0] == '/random':
+        date = 'сегодня'
+        task = choice(RANDOM_TASKS)
+        text = add_todo(date, task)
+    else:
+        # проверяем команду на валидность
+        if len(command) < 3:
+            text = 'Введите команду в формате:\n/add дата команда'
+        else:
+            date = command[1].lower()
+            task = command[2]
+            text = add_todo(date, task)
+    bot.send_message(message.chat.id, text)
+
+@bot.message_handler(commands=['show', 'print'])
+def show(message): #message.text = /print <date>
+    if not tasks:
+        text = 'Задач пока нет.\nДобавьте задачу с помощью команд:\n/add, /todo, /random\nВывод справки: /help'
+    else:
+        command = message.text.split(maxsplit=1)
+        # если в команде не указана дата, выводим задания по всем датам
+        if len(command) == 1:
+            dates = tasks.keys()
+            text = ''
+            for date in dates:
+                text = f'{text}{date.upper()}\n'
+                for task in tasks[date]:
+                    text = f'{text}[] {task}\n'
+                text = f'{text}\n'
+        else:
+            date = command[1].lower()
+            text = ''
+            if date in tasks:
+                text = f'{date.upper()}\n'
+                for task in tasks[date]:
+                    text = f'{text}[] {task}\n'
+            else:
+                text = "Задач на эту дату нет."
+    bot.send_message(message.chat.id, text)
+
+bot.polling(none_stop=True)
