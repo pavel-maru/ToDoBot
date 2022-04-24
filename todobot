@@ -5,7 +5,7 @@ import telebot
 
 from random import choice
 
-token = ''
+token = '5333661326:AAHgGhCuQVtaQ4RH61P37YPT12HYhrTWquU'
 
 bot = telebot.TeleBot(token)
 
@@ -18,10 +18,12 @@ RANDOM_TASKS = [
     ]
 
 HELP = """
-/help - напечатать справку по программе.
-/add - добавить задачу в список (название задачи запрашиваем у пользователя).
-/show - напечатать все добавленные задачи.
-/random - добавлять случайную задачу на дату СЕГОДНЯ.
+/help - напечатать справку по программе
+/add - добавить задачу в список (название задачи запрашиваем у пользователя)
+/show - напечатать все добавленные задачи
+/random - добавлять случайную задачу на дату СЕГОДНЯ
+/del - удалить неверно введённую или потерявшую актуальность задачу
+/done - пометить задачу выполненной
 """
 
 tasks = {}
@@ -51,7 +53,7 @@ def todo(message):
     else:
         # проверяем команду на валидность
         if len(command) < 3:
-            text = 'Введите команду в формате:\n/add дата команда'
+            text = 'Введите команду в формате:\n/add дата задача'
         else:
             date = command[1].lower()
             task = command[2]
@@ -83,5 +85,30 @@ def show(message): #message.text = /print <date>
             else:
                 text = "Задач на эту дату нет."
     bot.send_message(message.chat.id, text)
+
+@bot.message_handler(commands=['del', 'delete', 'erase'])
+def delete(message):
+    command = message.text.split(maxsplit=2)
+    if len(command) == 1:
+            text = 'Введите команду в формате:\n/del дата задача (для удаления выбранной задачи)\nИли в формате:\n/del дата (для удаления всех задач на выбранную дату)'
+    elif len(command) == 2:
+        date = command[1].lower()
+        if date in tasks:
+            del tasks[date]
+            text = f'Все задачи на дату {date} удалены.'
+        else:
+            text = 'Такой даты пока нет в вашем списке'
+    else:
+        date = command[1].lower()
+        task = command[2]
+        tasks.pop(date, task)
+        text = f'Задача {task} на дату {date} удалена.'
+    bot.send_message(message.chat.id, text)
+
+# @bot.message_handler(commands=['done'])
+# def done(message):
+#     command = message.text.split(maxsplit=2)
+#     text = 'Пометить задачу выполненной'
+#     bot.send_message(message.chat.id, text)
 
 bot.polling(none_stop=True)
