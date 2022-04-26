@@ -53,7 +53,7 @@ def todo(message):
     else:
         # проверяем команду на валидность
         if len(command) < 3:
-            text = 'Введите команду в формате:\n/add дата задача'
+            text = f'Введите команду в формате:\n/add дата задача'
         else:
             date = command[1].lower()
             task = command[2]
@@ -63,7 +63,7 @@ def todo(message):
 @bot.message_handler(commands=['show', 'print'])
 def show(message): #message.text = /print <date>
     if not tasks:
-        text = 'Задач пока нет.\nДобавьте задачу с помощью команд:\n/add, /todo, /random\nВывод справки: /help'
+        text = f'Задач пока нет.\nДобавьте задачу с помощью команд:\n/add, /todo, /random\nВывод справки: /help'
     else:
         command = message.text.split(maxsplit=1)
         # если в команде не указана дата, выводим задания по всем датам
@@ -83,26 +83,32 @@ def show(message): #message.text = /print <date>
                 for task in tasks[date]:
                     text = f'{text}[] {task}\n'
             else:
-                text = "Задач на эту дату нет."
+                text = f'Задач на дату {date} нет.'
     bot.send_message(message.chat.id, text)
 
 @bot.message_handler(commands=['del', 'delete', 'erase'])
 def delete(message):
     command = message.text.split(maxsplit=2)
     if len(command) == 1:
-            text = 'Введите команду в формате:\n/del дата задача (для удаления выбранной задачи)\nИли в формате:\n/del дата (для удаления всех задач на выбранную дату)'
+            text = f'Введите команду в формате:\n/del дата задача (для удаления выбранной задачи)\nИли в формате:\n/del дата (для удаления всех задач на выбранную дату)'
     elif len(command) == 2:
         date = command[1].lower()
         if date in tasks:
             del tasks[date]
             text = f'Все задачи на дату {date} удалены.'
         else:
-            text = 'Такой даты пока нет в вашем списке'
+            text = f'Даты {date} пока нет в вашем списке'
     else:
         date = command[1].lower()
-        task = command[2]
-        tasks.pop(date, task)
-        text = f'Задача {task} на дату {date} удалена.'
+        if date in tasks:
+            task = command[2]
+            if task in tasks[date]:
+                tasks[date].remove(task)
+                text = f'Задача {task} на дату {date} удалена.'
+            else:
+                text = f'Отсутствует задача {task} на дату {date}.'
+        else:
+            text = f'Даты {date} пока нет в вашем списке'
     bot.send_message(message.chat.id, text)
 
 # @bot.message_handler(commands=['done'])
