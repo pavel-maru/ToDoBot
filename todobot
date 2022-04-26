@@ -26,9 +26,8 @@ HELP = """
 /done - пометить задачу выполненной
 """
 
-NAME1 = 'Паша'
-NAME2 = 'Вася'
-NAME3 = 'Лена'
+# эхобот привествует по первым трём именам уникальными способами, по остальным указанным в списке - стандартно
+NAMES = ['Паша', 'Вася', 'Лена', 'Саша', 'Дима', 'Оля']
 
 tasks = {}
 
@@ -123,12 +122,15 @@ def delete(message):
 
 @bot.message_handler(content_types=['text'])
 def echo(message):
-    if NAME1 in message.text.capitalize():
-        text = f'Ба! {NAME1}! Знакомые всё лица!'
-    elif NAME2 in message.text.capitalize():
-        text = f'Бу! Привет, {NAME2}!'
-    elif NAME3 in message.text.capitalize():
-        text = f'{NAME3}, привет!'
+    string = message.text.capitalize()
+    if NAMES[0] in string:
+        text = f'Ба! {NAMES[0]}! Знакомые всё лица!'
+    elif NAMES[1] in string:
+        text = f'Бу! Привет, {NAMES[1]}!'
+    elif NAMES[2] in string:
+        text = f'{NAMES[2]}, привет!'
+    elif string in NAMES:
+        text = f'Привет, {string}!'
     else:
         text = message.text
     bot.send_message(message.chat.id, text)
