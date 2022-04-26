@@ -1,5 +1,5 @@
 # todobot: планировщик задач
-
+# совмещённый с эхоботом
 
 import telebot
 
@@ -25,6 +25,10 @@ HELP = """
 /del - удалить неверно введённую или потерявшую актуальность задачу
 /done - пометить задачу выполненной
 """
+
+NAME1 = 'Паша'
+NAME2 = 'Вася'
+NAME3 = 'Лена'
 
 tasks = {}
 
@@ -116,5 +120,17 @@ def delete(message):
 #     command = message.text.split(maxsplit=2)
 #     text = 'Пометить задачу выполненной'
 #     bot.send_message(message.chat.id, text)
+
+@bot.message_handler(content_types=['text'])
+def echo(message):
+    if NAME1 in message.text.capitalize():
+        text = f'Ба! {NAME1}! Знакомые всё лица!'
+    elif NAME2 in message.text.capitalize():
+        text = f'Бу! Привет, {NAME2}!'
+    elif NAME3 in message.text.capitalize():
+        text = f'{NAME3}, привет!'
+    else:
+        text = message.text
+    bot.send_message(message.chat.id, text)
 
 bot.polling(none_stop=True)
