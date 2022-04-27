@@ -121,8 +121,6 @@ def delete(message):
         date = command[1].lower()
         if date in tasks:
             task = f'[ ] {command[2]}'
-            print(task)
-            print(tasks[date])
             task_done = task.replace('[ ]', '[V]')
             if task in tasks[date]:
                 tasks[date].remove(task)
