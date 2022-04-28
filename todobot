@@ -5,7 +5,7 @@ import telebot
 
 from random import choice
 
-token = ''
+token = '5333661326:AAHgGhCuQVtaQ4RH61P37YPT12HYhrTWquU'
 
 bot = telebot.TeleBot(token)
 
@@ -32,31 +32,24 @@ NAMES = ['Паша', 'Вася', 'Лена', 'Саша', 'Дима', 'Оля']
 
 tasks = {}
 
-@bot.message_handler(content_types=['text'])
-def echo(message):
-    string = message.text.capitalize()
-    if NAMES[0] in string:
-        text = f'Ба! {NAMES[0]}! Знакомые всё лица!'
-    elif NAMES[1] in string:
-        text = f'Бу! Привет, {NAMES[1]}!'
-    elif NAMES[2] in string:
-        text = f'{NAMES[2]}, привет!'
-    elif string in NAMES:
-        text = f'Привет, {string}!'
-    else:
-        text = message.text
-    bot.send_message(message.chat.id, text)
 
 def add_todo(date, task):
     if date not in tasks:
         # такой даты в словаре нет
         # создаем запись с ключом date
         tasks[date] = []
-    # Добавляем в список задачу
-    tasks[date].append(task)
-    # если такая задача уже есть в списке, убираем дубль
-    tasks[date] = list(set(tasks[date]))
-    return f'Задача\n{task}\nдобавлена на дату {date}'
+    # делаем проверку на наличие такой задачи на данную дату
+    count = 0
+    for task_ in tasks[date]:
+        if task_[4:] == task[4:]:
+            count += 1
+            break
+    if count > 0:
+        return f'Задача {task} на дату {date} уже есть в списке'
+    else:
+        # Добавляем в список задачу
+        tasks[date].append(task)
+        return f'Задача {task} добавлена на дату {date}'
 
 @bot.message_handler(commands=['help'])
 def help(message):
@@ -72,7 +65,7 @@ def todo(message):
     else:
         # проверяем команду на валидность
         if len(command) < 3:
-            text = f'Введите команду в формате:\n/add дата задача'
+            text = 'Введите команду в формате:\n/add дата задача'
         else:
             date = command[1].lower()
             task = f'[ ] {command[2]}'
@@ -82,7 +75,7 @@ def todo(message):
 @bot.message_handler(commands=['show', 'print'])
 def show(message): #message.text = /print <date>
     if not tasks:
-        text = f'Задач пока нет.\nДобавьте задачу с помощью команд:\n/add, /todo, /random\nВывод справки: /help'
+        text = 'Задач пока нет.\nДобавьте задачу с помощью команд:\n/add, /todo, /random\nВывод справки: /help'
     else:
         command = message.text.split(maxsplit=1)
         # если в команде не указана дата, выводим задания по всем датам
@@ -109,7 +102,7 @@ def show(message): #message.text = /print <date>
 def delete(message):
     command = message.text.split(maxsplit=2)
     if len(command) == 1:
-            text = f'Введите команду в формате:\n/del дата задача\nдля удаления выбранной задачи\n\nИли в формате:\n/del дата\nдля удаления всех задач на выбранную дату'
+            text = 'Введите команду в формате:\n/del дата задача\nдля удаления выбранной задачи\n\nИли в формате:\n/del дата\nдля удаления всех задач на выбранную дату'
     elif len(command) == 2:
         date = command[1].lower()
         if date in tasks:
@@ -121,7 +114,9 @@ def delete(message):
         date = command[1].lower()
         if date in tasks:
             task = f'[ ] {command[2]}'
-            task_done = task.replace('[ ]', '[V]')
+            print(task)
+            print(tasks[date])
+            task_done = task.replace('[ ]', '[•]')
             if task in tasks[date]:
                 tasks[date].remove(task)
                 text = f'Задача {task} на дату {date} удалена.'
@@ -138,12 +133,12 @@ def delete(message):
 def done(message):
     command = message.text.split(maxsplit=2)
     if len(command) < 3:
-        text = f'Введите команду в формате:\n/done дата задача\nчтобы пометить выбранную задачу выполненной'
+        text = 'Введите команду в формате:\n/done дата задача\nчтобы пометить выбранную задачу выполненной'
     else:
         date = command[1].lower()
         if date in tasks:
             task = f'[ ] {command[2]}'
-            task_done = task.replace('[ ]', '[V]')
+            task_done = task.replace('[ ]', '[•]')
             if task in tasks[date]:
                 tasks[date].remove(task)
                 tasks[date].append(task_done)
@@ -154,6 +149,21 @@ def done(message):
                 text = f'Отсутствует задача {task} на дату {date}.'
         else:
             text = f'Даты {date} пока нет в вашем списке'
+    bot.send_message(message.chat.id, text)
+
+@bot.message_handler(content_types=['text'])
+def echo(message):
+    string = message.text.capitalize()
+    if NAMES[0] in string:
+        text = f'Ба! {NAMES[0]}! Знакомые всё лица!'
+    elif NAMES[1] in string:
+        text = f'Бу! Привет, {NAMES[1]}!'
+    elif NAMES[2] in string:
+        text = f'{NAMES[2]}, привет!'
+    elif string in NAMES:
+        text = f'Привет, {string}!'
+    else:
+        text = message.text
     bot.send_message(message.chat.id, text)
 
 bot.polling(none_stop=True)
